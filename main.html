@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Questionário 4 Áreas → 46 Perfis (com histórico + Digimon)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#06b6d4;
+    --good:#22c55e; --bad:#ef4444; --warn:#f59e0b; --neutral:#64748b;
+  }
+  body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.45}
+  header{padding:24px 16px;background:linear-gradient(90deg,#0ea5e9,#7c3aed);color:white}
+  header h1{margin:0 0 8px;font-size:22px}
+  header p{margin:0;opacity:.9}
+  main{max-width:1100px;margin:24px auto;padding:0 16px}
+  .card{background:var(--panel);border:1px solid #1f2937;border-radius:12px;margin:16px 0;overflow:hidden}
+  .card h2{margin:0;padding:14px 16px;border-bottom:1px solid #1f2937;font-size:18px;background:#0b1220}
+  .card .body{padding:12px 16px}
+  .q{margin:12px 0;padding:8px 10px;border:1px solid #1f2937;border-radius:10px}
+  .q label{display:block;margin-bottom:8px;font-weight:600}
+  .likert{display:grid;grid-template-columns:60px 1fr 60px;gap:10px;align-items:center}
+  .likert .scale{display:flex;gap:6px;align-items:center}
+  .likert input[type=range]{width:100%}
+  .hint{color:var(--muted);font-size:12px;margin-top:2px}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+  button{background:linear-gradient(180deg,#0ea5e9,#2563eb);border:none;color:white;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
+  button.secondary{background:#334155}
+  button.ghost{background:transparent;border:1px solid #334155;color:#cbd5e1}
+  .grid{display:grid;gap:12px}
+  @media(min-width:900px){ .grid.cols-2{grid-template-columns:1fr 1fr} .grid.cols-3{grid-template-columns:1fr 1fr 1fr} }
+  .meter{height:18px;background:#0b1220;border:1px solid #1f2937;border-radius:999px;position:relative;overflow:hidden}
+  .meter .fill{height:100%;background:linear-gradient(90deg,#22c55e,#06b6d4);width:0%}
+  .meter .center{position:absolute;left:50%;top:0;bottom:0;width:2px;background:#1f2937;opacity:.8}
+  .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .tag{display:inline-block;background:#0b1220;border:1px solid #1f2937;border-radius:999px;padding:2px 8px;margin-right:6px;font-size:12px;color:#cbd5e1}
+  .muted{color:var(--muted)}
+  .result-title{font-size:22px;margin:6px 0}
+  .desc{color:#d1d5db}
+  .small{font-size:12px;color:#9ca3af}
+  footer{padding:16px;color:#94a3b8;text-align:center}
+  ul.tight{margin:8px 0 0 18px;padding:0}
+  ul.tight li{margin:4px 0}
+  details summary{cursor:pointer}
+  .axis-card{padding:8px 10px;border:1px solid #1f2937;border-radius:10px}
+  .axis-title{font-weight:700}
+  .axis-sub{color:#9ca3af;font-size:12px;margin-top:2px}
+  .digimon-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid #334155;background:#0b1220}
+</style>
+</head>
+<body>
+<header>
+  <h1>Questionário amplo: Ideologia • Política • Personalidade • Filosofia</h1>
+  <p>Responda 48 afirmações (1–5). O script calcula automaticamente e classifica você em 1 de 46 perfis, salva histórico e sugere um Digimon correspondente.</p>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Instruções</h2>
+    <div class="body">
+      <ul>
+        <li>Escala 1–5: 1 = Discordo totalmente; 3 = Neutro; 5 = Concordo totalmente.</li>
+        <li>Todas as questões começam em “3” (neutro). Ajuste conforme sua visão.</li>
+        <li>Clique “Calcular meu perfil”. Você verá os eixos normalizados, o perfil, as correntes filosóficas e o Digimon correspondente.</li>
+      </ul>
+      <div class="actions">
+        <button id="btnRandom">Aleatorizar respostas</button>
+        <button class="secondary" id="btnNeutral">Resetar para Neutro (3)</button>
+        <label class="tag" style="cursor:pointer">
+          <input type="checkbox" id="chkAutoSave" style="vertical-align:middle;margin-right:6px"> Salvar automaticamente cada cálculo
+        </label>
+      </div>
+      <div class="small">Auto-save: ativado por padrão. Os registros ficam no seu navegador (localStorage).</div>
+    </div>
+  </div>
+
+  <form id="quizForm">
+    <div id="questions"></div>
+    <div class="card">
+      <div class="body">
+        <div class="actions">
+          <button type="button" id="btnCalc">Calcular meu perfil</button>
+          <button type="button" class="ghost" id="btnExport">Exportar resultado (JSON)</button>
+        </div>
+        <div class="small">Privacidade: tudo acontece no seu navegador (sem envio a servidores).</div>
+      </div>
+    </div>
+  </form>
+
+  <div id="results" class="card" style="display:none">
+    <h2>Resultados</h2>
+    <div class="body">
+      <div id="profileBlock"></div>
+      <div class="actions">
+        <button type="button" id="btnSaveHistory">Salvar no histórico</button>
+      </div>
+      <hr style="border-color:#1f2937;margin:16px 0">
+      <h3>Eixos (normalizados)</h3>
+      <div id="axesGrid" class="grid cols-2"></div>
+      <hr style="border-color:#1f2937;margin:16px 0">
+      <h3>Top 3 correntes filosóficas</h3>
+      <div id="topCurrents" class="grid cols-3"></div>
+      <details style="margin-top:12px">
+        <summary>Ver todas as correntes</summary>
+        <div id="allCurrents" class="grid cols-3" style="margin-top:8px"></div>
+      </details>
+    </div>
+  </div>
+
+  <div id="historyCard" class="card">
+    <h2>Histórico de resultados</h2>
+    <div class="body">
+      <div class="actions">
+        <button type="button" class="ghost" id="btnExportHistory">Exportar histórico (JSON)</button>
+        <button type="button" class="secondary" id="btnClearHistory">Limpar histórico</button>
+      </div>
+      <div id="historyList" class="grid cols-2"></div>
+      <div id="historyEmpty" class="small" style="display:none">Sem registros ainda. Calcule um perfil e clique “Salvar no histórico”.</div>
+    </div>
+  </div>
+
+  <div id="debug" class="card" style="display:none">
+    <h2>Debug</h2>
+    <div class="body">
+      <pre id="debugPre" style="white-space:pre-wrap"></pre>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div>Modelo educacional • Inclui Cristianismo Ortodoxo como corrente mensurável</div>
+</footer>
+
+<script>
+/*
+  Atualizações:
+  - Agora são 48 enunciados: 12 por seção (Ideologia, Política, Personalidade e Filosofia).
+  - Título e subtítulo em cada eixo normalizado.
+  - Auto-save ativado por padrão.
+  - Digimon para cada um dos 46 perfis com justificativa.
+*/
+
+/* ----------------------------- Data: Items ----------------------------- */
+const items = [
+  // Ideologia (I1..I12)
+  {code:'I1', group:'Ideologia', text:'A sociedade deve priorizar a igualdade de resultados, mesmo com menor eficiência econômica.', type:'dir',
+    axes:{Ecom:12, Cult:8}, currents:{}},
+  {code:'I2', group:'Ideologia', text:'A liberdade individual deve prevalecer sobre o bem coletivo, mesmo em temas sensíveis.', type:'dir',
+    axes:{Autor:12, Ecom:-6}, currents:{}},
+  {code:'I3', group:'Ideologia', text:'Tradições religiosas são alicerces morais indispensáveis à sociedade.', type:'dir',
+    axes:{Cult:-12, Orto:12, Etica:8}, currents:{DE:8, OR:10}},
+  {code:'I4', group:'Ideologia', text:'Mudanças culturais rápidas são desejáveis e positivas.', type:'dir',
+    axes:{Cult:12}, currents:{}},
+  {code:'I5', group:'Ideologia', text:'A meritocracia deve ser o principal critério para distribuir oportunidades.', type:'dir',
+    axes:{Ecom:-10}, currents:{}},
+  {code:'I6', group:'Ideologia', text:'Normas sociais devem se adaptar proativamente às minorias e pluralidades.', type:'dir',
+    axes:{Cult:12}, currents:{}},
+  {code:'I7', group:'Ideologia', text:'O Estado deve ser mínimo; serviços públicos devem ser amplamente substituíveis por soluções privadas.', type:'dir',
+    axes:{Ecom:-12, Autor:8}, currents:{}},
+  {code:'I8', group:'Ideologia', text:'A comunidade e a solidariedade devem prevalecer sobre interesses individuais.', type:'uni',
+    axes:{Ecom:10, Virt:6}, currents:{VI:6}},
+  {code:'I9', group:'Ideologia', text:'A moralidade possui um caráter objetivo e normativo, independente de consequências.', type:'dir',
+    axes:{Etica:12}, currents:{DE:10}},
+  {code:'I10', group:'Ideologia', text:'O Estado deve garantir padrões mínimos de bem-estar como direito social, ainda que custe caro.', type:'dir',
+    axes:{Ecom:12}, currents:{}},
+  {code:'I11', group:'Ideologia', text:'Direitos de propriedade são fundamentais e devem ser fortemente protegidos.', type:'dir',
+    axes:{Ecom:-12, Autor:6}, currents:{}},
+  {code:'I12', group:'Ideologia', text:'A cultura nacional e costumes locais devem ser preservados frente a tendências globais.', type:'dir',
+    axes:{Cult:-12, Glob:-10}, currents:{}},
+
+  // Política (P1..P12)
+  {code:'P1', group:'Política', text:'Tributação progressiva elevada é necessária para justiça social.', type:'dir',
+    axes:{Ecom:12}, currents:{}},
+  {code:'P2', group:'Política', text:'Regulamentações rigorosas em nome da segurança são preferíveis à liberdade em áreas sensíveis.', type:'dir',
+    axes:{Autor:-12}, currents:{}},
+  {code:'P3', group:'Política', text:'O governo deve controlar setores estratégicos (energia, defesa, infraestrutura crítica).', type:'dir',
+    axes:{Ecom:12}, currents:{}},
+  {code:'P4', group:'Política', text:'Liberdades civis e direitos individuais devem prevalecer sobre maiorias circunstanciais.', type:'dir',
+    axes:{Autor:12}, currents:{}},
+  {code:'P5', group:'Política', text:'A soberania nacional deve prevalecer sobre tratados e organizações supranacionais.', type:'dir',
+    axes:{Glob:-12}, currents:{}},
+  {code:'P6', group:'Política', text:'Imigração ampla e diversidade cultural fortalecem o país.', type:'dir',
+    axes:{Glob:12, Cult:6}, currents:{}},
+  {code:'P7', group:'Política', text:'Policiamento e vigilância devem se expandir para manter a ordem.', type:'dir',
+    axes:{Autor:-12}, currents:{}},
+  {code:'P8', group:'Política', text:'Políticas ambientais que limitem crescimento econômico são justificáveis.', type:'dir',
+    axes:{Ecom:10, Cult:6}, currents:{}},
+  {code:'P9', group:'Política', text:'Intervenções internacionais para proteger direitos humanos são justificadas.', type:'dir',
+    axes:{Glob:12}, currents:{}},
+  {code:'P10', group:'Política', text:'Voto obrigatório fortalece a democracia e deve ser mantido/implementado.', type:'dir',
+    axes:{Autor:-8}, currents:{}},
+  {code:'P11', group:'Política', text:'Orçamento equilibrado e regras fiscais rígidas devem estar na constituição.', type:'dir',
+    axes:{Ecom:-8}, currents:{}},
+  {code:'P12', group:'Política', text:'Cotas e ações afirmativas são necessárias para corrigir desigualdades históricas.', type:'dir',
+    axes:{Cult:12, Ecom:6}, currents:{}},
+
+  // Personalidade (N1..N12)
+  {code:'N1', group:'Personalidade', text:'Gosto de explorar ideias novas e abstratas.', type:'uni',
+    axes:{O:8}, currents:{}},
+  {code:'N2', group:'Personalidade', text:'Sou organizado(a) e cumpro prazos com rigor.', type:'uni',
+    axes:{C:8}, currents:{}},
+  {code:'N3', group:'Personalidade', text:'Sinto-me energizado(a) em grandes grupos e eventos sociais.', type:'uni',
+    axes:{E:8}, currents:{}},
+  {code:'N4', group:'Personalidade', text:'Evito conflitos e busco consenso e harmonia.', type:'uni',
+    axes:{A:8}, currents:{}},
+  {code:'N5', group:'Personalidade', text:'Mantenho a calma sob pressão e recupero-me rapidamente de estresse.', type:'uni',
+    axes:{S:8}, currents:{}},
+  {code:'N6', group:'Personalidade', text:'Aprecio profundamente arte, estética e experiências incomuns.', type:'uni',
+    axes:{O:8}, currents:{}},
+  {code:'N7', group:'Personalidade', text:'Planejo com antecedência e sigo rotinas.', type:'uni',
+    axes:{C:8}, currents:{}},
+  {code:'N8', group:'Personalidade', text:'Tomo iniciativa para conhecer pessoas e liderar conversas.', type:'uni',
+    axes:{E:8}, currents:{}},
+  {code:'N9', group:'Personalidade', text:'Empatia e compaixão influenciam fortemente minhas decisões.', type:'uni',
+    axes:{A:8}, currents:{}},
+  {code:'N10', group:'Personalidade', text:'Sou persistente ao perseguir metas de longo prazo.', type:'uni',
+    axes:{C:8}, currents:{}},
+  {code:'N11', group:'Personalidade', text:'Gosto de conhecer lugares e culturas novas.', type:'uni',
+    axes:{O:8}, currents:{}},
+  {code:'N12', group:'Personalidade', text:'Sinto-me confiante ao falar em público e liderar grupos.', type:'uni',
+    axes:{E:8}, currents:{}},
+
+  // Filosofia (F1..F12)
+  {code:'F1', group:'Filosofia', text:'O conhecimento provém principalmente da observação e da experiência.', type:'dir',
+    axes:{Epist:-12}, currents:{EM:12, MA:6}},
+  {code:'F2', group:'Filosofia', text:'A moralidade é, sobretudo, cumprir deveres e regras universais.', type:'dir',
+    axes:{Etica:12}, currents:{DE:12}},
+  {code:'F3', group:'Filosofia', text:'A ação correta é a que maximiza o bem-estar agregado.', type:'dir',
+    axes:{Etica:-12}, currents:{UT:12}},
+  {code:'F4', group:'Filosofia', text:'Formar caráter virtuoso é mais importante que seguir regras ou mirar resultados.', type:'uni',
+    axes:{Virt:10}, currents:{VI:12}},
+  {code:'F5', group:'Filosofia', text:'Existem realidades imateriais (Formas/essências) mais fundamentais que os objetos físicos.', type:'dir',
+    axes:{Epist:10}, currents:{PL:12, RA:8}},
+  {code:'F6', group:'Filosofia', text:'Toda realidade é material; mente e consciência são produtos físicos.', type:'dir',
+    axes:{Epist:-8, Orto:-8}, currents:{MA:12}},
+  {code:'F7', group:'Filosofia', text:'A existência é definida por liberdade, angústia e construção de sentido.', type:'uni',
+    axes:{}, currents:{EX:12}},
+  {code:'F8', group:'Filosofia', text:'Diante de evidências insuficientes, é melhor suspender o juízo.', type:'uni',
+    axes:{}, currents:{CE:12}},
+  {code:'F9', group:'Filosofia', text:'Concordo com os ensinamentos centrais do Cristianismo Ortodoxo (Trindade, encarnação, sacramentos, autoridade da Tradição).', type:'dir',
+    axes:{Orto:14}, currents:{OR:14}},
+  {code:'F10', group:'Filosofia', text:'Disciplina interior, domínio das paixões e aceitação serena do destino são virtudes-chave.', type:'uni',
+    axes:{Virt:8, S:4}, currents:{ES:12}},
+  {code:'F11', group:'Filosofia', text:'A teologia é em grande parte apofática; a Igreja é um “hospital espiritual” e os sacramentos, meios de graça.', type:'dir',
+    axes:{Orto:12}, currents:{OR:12}},
+  {code:'F12', group:'Filosofia', text:'A experiência vivida e intencionalidade fenomenológica precedem explicações teóricas.', type:'uni',
+    axes:{}, currents:{FE:12}},
+];
+
+/* -------------------- Render: Questions (range 1..5) ------------------- */
+const groupsOrder = ['Ideologia','Política','Personalidade','Filosofia'];
+const questionsContainer = document.getElementById('questions');
+
+function renderQuestions(){
+  const byGroup = {};
+  for(const g of groupsOrder){ byGroup[g] = []; }
+  for(const it of items){ if(!byGroup[it.group]) byGroup[it.group]=[]; byGroup[it.group].push(it); }
+  const frag = document.createDocumentFragment();
+  for(const g of groupsOrder){
+    const card = document.createElement('div');
+    card.className='card';
+    const h2 = document.createElement('h2');
+    h2.textContent = g;
+    const body = document.createElement('div'); body.className='body';
+    for(const it of byGroup[g]){
+      const div = document.createElement('div'); div.className='q';
+      const label = document.createElement('label');
+      label.setAttribute('for', it.code);
+      label.textContent = `${it.code}. ${it.text}`;
+      const likert = document.createElement('div'); likert.className='likert';
+      const left = document.createElement('div'); left.className='muted'; left.textContent='Discordo';
+      const right = document.createElement('div'); right.className='muted'; right.textContent='Concordo';
+      const scale = document.createElement('div'); scale.className='scale';
+      const input = document.createElement('input');
+      input.type='range'; input.min='1'; input.max='5'; input.step='1'; input.value='3'; input.id=it.code; input.name=it.code;
+      scale.appendChild(input);
+      const hint = document.createElement('div'); hint.className='hint'; hint.textContent='1  2  3  4  5';
+      likert.append(left, scale, right);
+      div.append(label, likert, hint);
+      body.appendChild(div);
+    }
+    card.append(h2, body);
+    frag.appendChild(card);
+  }
+  questionsContainer.innerHTML='';
+  questionsContainer.appendChild(frag);
+}
+renderQuestions();
+
+/* ----------------------- Scoring: Axes & Currents ---------------------- */
+const axisNames = ['Ecom','Cult','Autor','Glob','Epist','Etica','Virt','Orto','O','C','E','A','S'];
+const axisMeta = {
+  Ecom:{type:'dir', title:'Economia', desc:'Estado (+) ↔ Mercado (−)'},
+  Cult:{type:'dir', title:'Cultura', desc:'Progressista (+) ↔ Tradicionalista (−)'},
+  Autor:{type:'dir', title:'Autoridade', desc:'Libertário (+) ↔ Autoritário (−)'},
+  Glob:{type:'dir', title:'Globalismo', desc:'Cosmopolita (+) ↔ Nacionalista (−)'},
+  Epist:{type:'dir', title:'Epistemologia', desc:'Racionalismo (+) ↔ Empirismo (−)'},
+  Etica:{type:'dir', title:'Ética', desc:'Deontologia (+) ↔ Consequencialismo (−)'},
+  Virt:{type:'uni', title:'Virtudes', desc:'Ênfase na ética das virtudes (0→100)'},
+  Orto:{type:'dir', title:'Espiritualidade Ortodoxa', desc:'Cristão Ortodoxo (+) ↔ Secular (−)'},
+  O:{type:'uni', title:'Abertura', desc:'Big Five: abertura a experiências (0→100)'},
+  C:{type:'uni', title:'Conscienciosidade', desc:'Big Five: organização e disciplina (0→100)'},
+  E:{type:'uni', title:'Extroversão', desc:'Big Five: energia social (0→100)'},
+  A:{type:'uni', title:'Amabilidade', desc:'Big Five: cooperação e empatia (0→100)'},
+  S:{type:'uni', title:'Estabilidade Emocional', desc:'Big Five: resiliência (0→100)'},
+};
+
+const currentsList = ['EM','RA','UT','DE','VI','EX','ES','CE','PL','MA','FE','OR'];
+const currentsMeta = {
+  EM:'Empirismo',
+  RA:'Racionalismo',
+  UT:'Utilitarismo (Consequencialismo)',
+  DE:'Deontologia (Kantismo)',
+  VI:'Ética das Virtudes (Aristotelismo)',
+  EX:'Existencialismo',
+  ES:'Estoicismo',
+  CE:'Ceticismo',
+  PL:'Platonismo',
+  MA:'Materialismo',
+  FE:'Fenomenologia',
+  OR:'Cristianismo Ortodoxo'
+};
+
+// Max ranges for normalization
+const axisMax = {};
+const currentsMax = {};
+function computeMaxima(){
+  for(const a of axisNames){ axisMax[a] = {sumAbs:0, uniMax:0}; }
+  for(const c of currentsList){ currentsMax[c] = 0; }
+  for(const it of items){
+    for(const [a,k] of Object.entries(it.axes||{})){
+      if(axisMeta[a].type==='dir'){ axisMax[a].sumAbs += 2*Math.abs(k); }
+      else{ axisMax[a].uniMax += 4*k; }
+    }
+    for(const [c,k] of Object.entries(it.currents||{})){
+      currentsMax[c] += 4*k;
+    }
+  }
+}
+computeMaxima();
+
+function getResponses(){
+  const vals = {};
+  for(const it of items){
+    const el = document.getElementById(it.code);
+    vals[it.code] = parseInt(el.value || '3', 10);
+  }
+  return vals;
+}
+
+function computeScores(responses){
+  const rawAxes = Object.fromEntries(axisNames.map(a=>[a,0]));
+  const rawCurr = Object.fromEntries(currentsList.map(c=>[c,0]));
+  for(const it of items){
+    const r = responses[it.code];
+    const d = (r - 3); // −2..+2
+    const u = (r - 1); // 0..4
+    for(const [a,k] of Object.entries(it.axes||{})){
+      if(axisMeta[a].type==='dir'){ rawAxes[a] += d*k; }
+      else{ rawAxes[a] += u*k; }
+    }
+    for(const [c,k] of Object.entries(it.currents||{})){
+      rawCurr[c] += u*k;
+    }
+  }
+  const axesNorm = {};
+  for(const a of axisNames){
+    if(axisMeta[a].type==='dir'){
+      const denom = axisMax[a].sumAbs || 1;
+      axesNorm[a] = clamp((rawAxes[a]/denom)*100, -100, 100);
+    }else{
+      const denom = axisMax[a].uniMax || 1;
+      axesNorm[a] = clamp((rawAxes[a]/denom)*100, 0, 100);
+    }
+  }
+  const currNorm = {};
+  for(const c of currentsList){
+    const denom = currentsMax[c] || 1;
+    currNorm[c] = clamp((rawCurr[c]/denom)*100, 0, 100);
+  }
+  return {rawAxes, axesNorm, rawCurr, currNorm};
+}
+function clamp(x, lo, hi){ return Math.max(lo, Math.min(hi, x)); }
+
+/* ------------------ Profiles (23 bases × 2, com explicações) ---------- */
+const baseProfiles = [
+  {code:'B1', name:'Liberal Cosmopolita de Mercado', vec:{Ecom:-70, Cult:50, Autor:70, Glob:70, Orto:-60, O:70, C:55, E:60, A:60, S:60},
+    descP:'Liberal clássico de direitos naturais; pró-mercado, progressista em costumes, libertário e pró-integração global.',
+    descG:'Liberal pró-mercado orientado a resultados: regulações quando eficazes e políticas baseadas em evidências.',
+    expP:[
+      'Eixos: mercado forte (−Ecom), costumes progressistas (+Cult), liberdades civis (+Autor), cosmopolitismo (+Glob).',
+      'Filosofia: deontologia e racionalismo; direitos como princípios e igualdade perante a lei.',
+      'Políticas: livre-comércio, regulação pró-competição, igualdade civil, migração e inovação.'
+    ],
+    expG:[
+      'Mesmos eixos com foco consequencialista e empirista.',
+      'Critério: impacto mensurável no bem-estar e na competição.',
+      'Ferramentas: precificação de externalidades, vouchers/testes A/B, avaliação de políticas.'
+    ]},
+  {code:'B2', name:'Libertário Localista', vec:{Ecom:-80, Cult:20, Autor:80, Glob:-20, Orto:-40, O:65, C:55, E:55, A:65, S:60},
+    descP:'Autonomia individual com ênfase em comunidades locais e subsidiariedade. Não agressão e direitos naturais.',
+    descG:'Soluções voluntárias de proximidade; experimentação cívica e empirismo local.',
+    expP:[
+      'Eixos: mercado (−Ecom), libertário (+Autor), localista (Glob levemente −), cultura moderada (+Cult).',
+      'Filosofia: princípio de não agressão, subsidiariedade, confiança em instituições locais.',
+      'Políticas: descentralização, escolas/saúde com liberdade de escolha, cooperativas e mutualismo.'
+    ],
+    expG:[
+      'Foco no que funciona no município/bairro.',
+      'Pilotos e métricas locais, regulação leve, arranjos voluntários.',
+      'Mercados com governança comunitária e reputação.'
+    ]},
+  {code:'B3', name:'Capitalista Social Progressista', vec:{Ecom:-40, Cult:70, Autor:60, Glob:60, Orto:-40, O:75, C:60, E:60, A:65, S:60},
+    descP:'Pró-inovação, mercado com redes de proteção, costumes progressistas. Dignidade, direitos e deveres cívicos.',
+    descG:'Pragmatismo regulatório calibrado por dados, impacto e custo-efetividade.',
+    expP:[
+      'Eixos: mercado moderado (−Ecom) com proteção social, progressismo (+Cult), liberdades (+Autor), cosmopolitismo (+Glob).',
+      'Filosofia: princípios de dignidade e justiça aliado à inovação.',
+      'Políticas: renda mínima/seguro social, competição e direitos civis fortes.'
+    ],
+    expG:[
+      'Ajusta a regulação pelo que prova funcionar.',
+      'Mede externalidades e incentiva inovação sustentável.',
+      'Expansões sociais via pilotos e avaliação de impacto.'
+    ]},
+  {code:'B4', name:'Social-Democrata Cosmopolita', vec:{Ecom:30, Cult:70, Autor:40, Glob:70, Orto:-30, O:70, C:60, E:55, A:70, S:55},
+    descP:'Bem-estar robusto, progressismo cultural, integração internacional. Justiça e igualdade como deveres públicos.',
+    descG:'Equilíbrio entre impostos, serviços e crescimento; políticas testadas e ajustáveis.',
+    expP:[
+      'Eixos: Estado (+Ecom), progressismo (+Cult), liberdades (+Autor), cosmopolitismo (+Glob).',
+      'Filosofia: deveres de justiça, universalismo de direitos.',
+      'Políticas: saúde/educação universais, proteção ao trabalho, cooperação internacional.'
+    ],
+    expG:[
+      'Benchmarks nórdicos e metas claras.',
+      'Foco em sustentabilidade fiscal e indicadores sociais.',
+      'Correções iterativas conforme resultados.'
+    ]},
+  {code:'B5', name:'Nacional-Desenvolvimentista S-D', vec:{Ecom:50, Cult:30, Autor:10, Glob:-40, Orto:-10, O:55, C:65, E:50, A:60, S:60},
+    descP:'Planejamento estatal e projeto nacional; valores comunitários moderados.',
+    descG:'Busca resultados industriais e de renda com pragmatismo estratégico.',
+    expP:[
+      'Eixos: Estado (+Ecom), cultura moderada (+Cult), nacionalismo (−Glob).',
+      'Filosofia: bem comum, deveres cívicos e coesão.',
+      'Políticas: conteúdo local, crédito direcionado, compras públicas estratégicas.'
+    ],
+    expG:[
+      'Análises de cadeia produtiva e metas exportadoras.',
+      'Clústeres e parques tecnológicos com governança por desempenho.',
+      'Revisões periódicas de incentivos.'
+    ]},
+  {code:'B6', name:'Socialista Dem. Municipalista', vec:{Ecom:70, Cult:60, Autor:40, Glob:-10, Orto:-20, O:65, C:55, E:50, A:70, S:55},
+    descP:'Democracia econômica local, cooperativas e igualdade. Solidariedade e participação.',
+    descG:'Experimentos municipais e métricas de bem-estar.',
+    expP:[
+      'Eixos: Estado (+Ecom), progressismo (+Cult), autonomia cívica (+Autor), localismo leve (Glob ≈ 0/−).',
+      'Filosofia: participação deliberativa e justiça distributiva.',
+      'Políticas: orçamentos participativos, cooperativas e conselhos comunitários.'
+    ],
+    expG:[
+      'Pilotos de bairro com indicadores de saúde e educação.',
+      'Escalonamento do que funciona, transparência radical.',
+      'Plataformas públicas digitais para participação.'
+    ]},
+  {code:'B7', name:'Eco-Liberal', vec:{Ecom:-30, Cult:80, Autor:50, Glob:60, Orto:-30, O:80, C:55, E:55, A:65, S:55},
+    descP:'Sustentabilidade com mercados, inovação verde e direitos individuais.',
+    descG:'Precificação de externalidades e regulação “smart”.',
+    expP:[
+      'Eixos: mercado moderado (−Ecom), progressismo (+Cult), liberdades (+Autor), cosmopolitismo (+Glob).',
+      'Filosofia: dever intergeracional e prudência científica.',
+      'Políticas: mercados de carbono, propriedade ambiental, inovação limpa.'
+    ],
+    expG:[
+      'Design regulatório baseado em evidências.',
+      'Pilotos tecnológicos e medição de emissões/impactos.',
+      'Revisão ágil e accountability.'
+    ]},
+  {code:'B8', name:'Eco-Socialista', vec:{Ecom:60, Cult:80, Autor:10, Glob:30, Orto:-20, O:75, C:50, E:50, A:70, S:50},
+    descP:'Transição ecológica liderada pelo Estado, justiça climática e igualdade.',
+    descG:'Prioriza mitigação/adaptação efetivas com foco em impacto.',
+    expP:[
+      'Eixos: Estado (+Ecom), progressismo (+Cult), internacionalismo moderado (+Glob).',
+      'Filosofia: dever moral ambiental e sobriedade.',
+      'Políticas: energia pública verde, tarifas sociais, empregos de transição.'
+    ],
+    expG:[
+      'Indicadores de custo-efetividade climática.',
+      'Metas claras de descarbonização e adaptação.',
+      'Revisões baseadas em resultados sociais.'
+    ]},
+  {code:'B9', name:'Conservador Liberal', vec:{Ecom:-50, Cult:-50, Autor:40, Glob:40, Orto:20, O:45, C:65, E:55, A:55, S:60},
+    descP:'Tradição e mercado com liberdades civis; cético a rupturas rápidas.',
+    descG:'Preserva costumes com flexibilidade orientada a resultados.',
+    expP:[
+      'Eixos: mercado (−Ecom) e tradicionalismo (−Cult) com liberdades (+Autor).',
+      'Filosofia: ordem social, deveres e virtudes cívicas.',
+      'Políticas: liberdade religiosa, prudência regulatória, federalismo.'
+    ],
+    expG:[
+      'Avalia reformas por eficácia e custo.',
+      'Adapta tradições sem romper instituições.',
+      'Regulação enxuta e responsiva.'
+    ]},
+  {code:'B10', name:'Conservador Comunitarista', vec:{Ecom:10, Cult:-60, Autor:-10, Glob:-20, Orto:40, O:40, C:65, E:50, A:65, S:60},
+    descP:'Comunidade, família e deveres; ordem social orgânica.',
+    descG:'Política pró-comunidade guiada por resultados.',
+    expP:[
+      'Eixos: ligeiro estatismo (+Ecom), tradicionalismo (−Cult), localismo (−Glob).',
+      'Filosofia: virtudes de caráter e obrigações mútuas.',
+      'Políticas: suporte a famílias, associações civis, segurança proporcional.'
+    ],
+    expG:[
+      'Avalia coesão: crime, solidão, capital social.',
+      'Programas focados em vínculos locais e mentoria.',
+      'Recortes por evidência territorial.'
+    ]},
+  {code:'B11', name:'Democrata-Cristão (Ort.)', vec:{Ecom:-10, Cult:-20, Autor:30, Glob:10, Orto:70, O:50, C:70, E:50, A:70, S:65},
+    descP:'Síntese de valores ortodoxos com democracia e economia social de mercado.',
+    descG:'Mesma linha com pragmatismo e avaliação empírica.',
+    expP:[
+      'Eixos: economia social de mercado, tradicionalismo leve (−Cult), liberdades moderadas (+Autor), Orto alto (+).',
+      'Teologia: foco na vontade de Deus e vida sacramental.',
+      'Políticas: subsidiariedade, proteção social à família, ética pública.'
+    ],
+    expG:[
+      'Aplicação prudencial de princípios conforme evidência.',
+      'Parcerias público-comunitárias.',
+      'Foco em frutos sociais e dignidade da pessoa.'
+    ]},
+  {code:'B12', name:'Tradicionalista Ortodoxo', vec:{Ecom:20, Cult:-80, Autor:-30, Glob:-40, Orto:90, O:40, C:65, E:45, A:70, S:70},
+    descP:'Enraizado na Tradição Ortodoxa: liturgia, sacramentos e vida virtuosa.',
+    descG:'Mantém ethos ortodoxo com prudência na vida pública.',
+    expP:[
+      'Eixos: tradicionalismo forte (−Cult), comunitarismo e Orto muito alto (+).',
+      'Ênfase na vida eclesial, ascese e theosis.',
+      'Políticas: liberdade religiosa, família e solidariedade.'
+    ],
+    expG:[
+      'Prudência e foco em frutos concretos.',
+      'Caridade eficaz e cooperação quando oportuno.',
+      'Prioriza paz social e cuidado ao próximo.'
+    ]},
+  {code:'B13', name:'Neoconservador Globalista', vec:{Ecom:-30, Cult:-20, Autor:-10, Glob:80, Orto:20, O:50, C:60, E:55, A:50, S:60},
+    descP:'Ordem internacional, comércio e defesa; dever de proteger.',
+    descG:'Intervenções e alianças calibradas por custo-benefício.',
+    expP:[
+      'Eixos: mercado moderado (−Ecom), conservador nos costumes (−Cult), globalista (+Glob).',
+      'Filosofia: norma internacional e responsabilidade.',
+      'Políticas: alianças, comércio e dissuasão robusta.'
+    ],
+    expG:[
+      'Critérios: estabilidade regional, baixas civis e sustentabilidade.',
+      'Limita nation-building ao que é viável.',
+      'Avaliações pós-ação e aprendizado institucional.'
+    ]},
+  {code:'B14', name:'Populista Nacional de Direita', vec:{Ecom:-10, Cult:-70, Autor:-40, Glob:-80, Orto:30, O:40, C:55, E:60, A:45, S:55},
+    descP:'Identidade nacional, lei e ordem, valores tradicionais.',
+    descG:'Proteção e coesão nacional guiadas por resultados.',
+    expP:[
+      'Eixos: tradicionalismo (−Cult), autoridade (−Autor), nacionalismo (−Glob).',
+      'Filosofia: deveres patrióticos e continuidade cultural.',
+      'Políticas: controle migratório, reindustrialização, segurança pública firme.'
+    ],
+    expG:[
+      'Prioriza redução de crime e desemprego.',
+      'Protecionismo estratégico com metas.',
+      'Revisões periódicas conforme indicadores.'
+    ]},
+  {code:'B15', name:'Populista Nacional de Esquerda', vec:{Ecom:60, Cult:10, Autor:-30, Glob:-80, Orto:10, O:45, C:55, E:55, A:50, S:55},
+    descP:'Soberania econômica, redistribuição e identidade popular.',
+    descG:'Foco em emprego, renda e proteção dos vulneráveis.',
+    expP:[
+      'Eixos: estatismo (+Ecom), leve progressismo (+Cult), nacionalismo (−Glob).',
+      'Filosofia: justiça social nacional e autodeterminação.',
+      'Políticas: nacionalização seletiva, compras locais, controle de capitais.'
+    ],
+    expG:[
+      'Metas de emprego/renda e avaliação setorial.',
+      'Tarifas temporárias com revisão.',
+      'Programas antifome e crédito popular.'
+    ]},
+  {code:'B16', name:'Republicano Cívico', vec:{Ecom:-10, Cult:-10, Autor:20, Glob:10, Orto:20, O:55, C:65, E:55, A:60, S:60},
+    descP:'Liberdade como não-dominação; virtudes cívicas e regras constitucionais.',
+    descG:'Reformas testadas por redução de corrupção e aumento de engajamento.',
+    expP:[
+      'Eixos: equilíbrio geral com liberalismo cívico.',
+      'Filosofia: república mista, deveres e direitos.',
+      'Políticas: transparência, participação e educação cívica.'
+    ],
+    expG:[
+      'Mede accountability e confiança institucional.',
+      'Ajusta desenho institucional por evidência.',
+      'Foco em imparcialidade do Estado.'
+    ]},
+  {code:'B17', name:'Tecno-Progressista', vec:{Ecom:-20, Cult:90, Autor:30, Glob:80, Orto:-50, O:85, C:60, E:55, A:55, S:55},
+    descP:'Inovação e direitos digitais como princípios; progresso humano.',
+    descG:'Governança baseada em evidências e métricas de impacto tecnológico.',
+    expP:[
+      'Eixos: inovação (−Ecom), progressismo (+Cult), globalismo (+Glob).',
+      'Filosofia: ciência, racionalidade pública e direitos.',
+      'Políticas: IA ética, pesquisa aberta e inclusão digital.'
+    ],
+    expG:[
+      'Pilotos controlados e auditorias independentes.',
+      'Itinerários regulatórios adaptativos.',
+      'Critério: benefícios líquidos e mitigação de riscos.'
+    ]},
+  {code:'B18', name:'Tecno-Estatista', vec:{Ecom:40, Cult:80, Autor:-10, Glob:60, Orto:-40, O:80, C:60, E:50, A:50, S:55},
+    descP:'Estado coordenando revoluções tecnológicas para o bem público.',
+    descG:'Sandboxes, iteração e auditorias empíricas.',
+    expP:[
+      'Eixos: estatismo (+Ecom), progressismo (+Cult), globalismo (+Glob).',
+      'Filosofia: segurança, equidade e inclusão digital.',
+      'Políticas: infraestrutura e dados públicos, regulação preventiva.'
+    ],
+    expG:[
+      'Prototipagem regulatória com metas.',
+      'Medições de risco/benefício e fairness.',
+      'Ajustes contínuos por evidência.'
+    ]},
+  {code:'B19', name:'Libertário de Esquerda', vec:{Ecom:-50, Cult:70, Autor:90, Glob:10, Orto:-40, O:80, C:45, E:60, A:65, S:50},
+    descP:'Autonomia radical, antiautoritarismo e igualdade em costumes.',
+    descG:'Comunidades voluntárias avaliadas pelo empoderamento real.',
+    expP:[
+      'Eixos: mercado (−Ecom) com forte anti-hierarquia (+Autor), progressismo (+Cult).',
+      'Filosofia: não dominação e justiça social voluntária.',
+      'Políticas: cooperativas, descriminalização, plataformas abertas.'
+    ],
+    expG:[
+      'Mede emancipação e redução de coerção.',
+      'Pilotos comunitários e governança distribuída.',
+      'Foco em direitos civis concretos.'
+    ]},
+  {code:'B20', name:'Anarco-Capitalista', vec:{Ecom:-90, Cult:30, Autor:100, Glob:20, Orto:-60, O:70, C:55, E:60, A:50, S:55},
+    descP:'Propriedade privada, contratos e não-agressão como axiomas.',
+    descG:'Arranjos policêntricos julgados por eficiência observável.',
+    expP:[
+      'Eixos: mercado extremo (−Ecom) e anti-Estado (+Autor).',
+      'Filosofia: direitos negativos e ordem emergente.',
+      'Políticas: privatização ampla, moeda competitiva, arbitragem privada.'
+    ],
+    expG:[
+      'Critérios: segurança, custos e inovação institucional.',
+      'Mercados de reputação e seguros.',
+      'Comparação entre jurisdições voluntárias.'
+    ]},
+  {code:'B21', name:'Anarco-Comunal', vec:{Ecom:70, Cult:50, Autor:100, Glob:0, Orto:-30, O:75, C:45, E:60, A:70, S:50},
+    descP:'Autogestão, horizontalidade e virtudes comunitárias.',
+    descG:'Modelos comunais julgados por bem-estar real.',
+    expP:[
+      'Eixos: economia comum (+Ecom), antiautoritarismo (+Autor).',
+      'Filosofia: ética das virtudes e democracia direta.',
+      'Políticas: bens comuns, cooperativas integrais, redes solidárias.'
+    ],
+    expG:[
+      'Indicadores de saúde, educação e coesão.',
+      'Escalonamento do que prospera em rede.',
+      'Transparência e governança participativa.'
+    ]},
+  {code:'B22', name:'Centrista Pragmático', vec:{Ecom:0, Cult:0, Autor:0, Glob:0, Orto:-10, O:55, C:60, E:50, A:60, S:60},
+    descP:'Centro com princípios: equilíbrio de direitos, deveres e virtudes.',
+    descG:'“O que funciona” acima de identidades ideológicas.',
+    expP:[
+      'Eixos: equilíbrio nos quatro quadrantes políticos.',
+      'Filosofia: prudência, gradualismo e pactos.',
+      'Políticas: comissões independentes e ajustes incrementais.'
+    ],
+    expG:[
+      'Ciclo piloto-medir-ajustar.',
+      'Benchmarking e comparação internacional.',
+      'Evita soluções maximalistas.'
+    ]},
+  {code:'B23', name:'Humanista Secular Universalista', vec:{Ecom:-10, Cult:80, Autor:40, Glob:80, Orto:-90, O:80, C:55, E:50, A:65, S:60},
+    descP:'Dignidade humana, direitos universais e cosmopolitismo; racionalismo e ética de princípios.',
+    descG:'Humanismo por resultados: maximiza florescimento humano mensurável.',
+    expP:[
+      'Eixos: leve mercado (−Ecom), progressismo (+Cult), liberdades (+Autor), globalismo (+Glob).',
+      'Filosofia: ciência, laicidade e direitos humanos.',
+      'Políticas: cooperação global, liberdade de consciência, ciência aberta.'
+    ],
+    expG:[
+      'Critérios: bem-estar, saúde e educação global.',
+      'Políticas baseadas em evidências comparadas.',
+      'Ajustes por métricas de impacto.'
+    ]},
+];
+
+// Subtipos: Principista vs Pragmatista
+function buildCentroids(){
+  const centroids = [];
+  for(const b of baseProfiles){
+    // Principista (P)
+    const p = JSON.parse(JSON.stringify(b.vec));
+    p.Epist = 60;  // racionalismo
+    p.Etica = 60;  // deontologia
+    p.Virt  = 80;  // +30 sobre ~50
+    if(p.Orto > 0) p.Orto = clamp(p.Orto + 10, -100, 100);
+    centroids.push({code:`${b.code}-P`, base:b.code, name:`${b.name} (Principista)`, vec:p, desc:b.descP, exp:b.expP, subtype:'P'});
+
+    // Pragmatista (G)
+    const g = JSON.parse(JSON.stringify(b.vec));
+    g.Epist = -60; // empirismo
+    g.Etica = -60; // consequencialismo
+    g.Virt  = 60;  // +10 sobre ~50
+    centroids.push({code:`${b.code}-G`, base:b.code, name:`${b.name} (Pragmatista)`, vec:g, desc:b.descG, exp:b.expG, subtype:'G'});
+  }
+  return centroids;
+}
+const centroids46 = buildCentroids();
+
+// Distance weights
+const weights = {
+  Ecom:1, Cult:1, Autor:1, Glob:1, Orto:1,
+  Epist:0.7, Etica:0.7, Virt:0.7,
+  O:0.4, C:0.4, E:0.4, A:0.4, S:0.4
+};
+
+function distance(user, center){
+  let sum = 0;
+  for(const a of Object.keys(weights)){
+    const w = weights[a] || 1;
+    const diff = (user[a] ?? 0) - (center[a] ?? 0);
+    sum += w * diff * diff;
+  }
+  return Math.sqrt(sum);
+}
+
+function classify(axesNorm){
+  const V = {};
+  for(const a of Object.keys(weights)){ V[a] = axesNorm[a] ?? 0; }
+  let best = null, bestD = Infinity;
+  for(const c of centroids46){
+    const d = distance(V, c.vec);
+    if(d < bestD){ bestD = d; best = c; }
+  }
+  return {best, bestD};
+}
+
+/* ------------------------- Digimon mapping (46) ------------------------ */
+const digimonMap = {
+  'B1-P': {name:'Chicomon', emoji:'🌐', why:'Sociável e aberto a novas alianças; energia otimista e pró-inovação combinam com cosmopolitismo liberal.'},
+  'B1-G': {name:'Choromon', emoji:'⚙️', why:'Pragmático e técnico; foca em eficiência e ajustes finos pró-mercado.'},
+
+  'B2-P': {name:'Zerimon', emoji:'🧭', why:'Espírito livre e cooperativo, valoriza autonomia e laços locais com princípios firmes.'},
+  'B2-G': {name:'Paomon', emoji:'🏡', why:'Leal e comunitário, prioriza soluções de proximidade que funcionam no cotidiano.'},
+
+  'B3-P': {name:'Leafmon', emoji:'🌱', why:'Crescimento com cuidado social; progressista e amigável a redes de proteção.'},
+  'B3-G': {name:'Puwamon', emoji:'🕊️', why:'Observador e adaptável; calibra políticas com dados e feedbacks rápidos.'},
+
+  'B4-P': {name:'Nyokimon', emoji:'🌸', why:'Abertura e intercâmbio; compromisso com bem-estar universal e integração.'},
+  'B4-G': {name:'Pipimon', emoji:'📊', why:'Ajusta rotas por evidência; equilíbrio entre justiça social e sustentabilidade fiscal.'},
+
+  'B5-P': {name:'Tsubumon', emoji:'🪨', why:'Semente robusta: foco em base produtiva e projeto nacional.'},
+  'B5-G': {name:'Sunamon', emoji:'🏗️', why:'Constrói do chão; metas industriais e pragmatismo estratégico.'},
+
+  'B6-P': {name:'Yuramon', emoji:'🤝', why:'Brota em comunidade; deliberação e solidariedade locais.'},
+  'B6-G': {name:'Pyonmon', emoji:'🔁', why:'Iterativo e leve; pilotos municipais e métricas de bem-estar.'},
+
+  'B7-P': {name:'Cocomon', emoji:'🌿', why:'Mercados verdes e inovação ecológica com direitos individuais.'},
+  'B7-G': {name:'Pitchmon', emoji:'💧', why:'Navega fluxos (dados/externalidades) para soluções ambientais eficazes.'},
+
+  'B8-P': {name:'Popomon', emoji:'🌳', why:'Justiça climática e transformação coletiva; crescimento com sobriedade.'},
+  'B8-G': {name:'Ketomon', emoji:'🧪', why:'Adaptação técnica: mitigação e transição guiadas por impacto.'},
+
+  'B9-P': {name:'Relemon', emoji:'🦊', why:'Prudente e contido; preserva virtudes e liberdades civis.'},
+  'B9-G': {name:'Botamon', emoji:'🔥', why:'Clássico e confiável; testando e ajustando sem rupturas bruscas.'},
+
+  'B10-P': {name:'Tomorimon', emoji:'🏘️', why:'Âncora comunitária: família, vizinhança e ordem social orgânica.'},
+  'B10-G': {name:'Pafumon', emoji:'🎗️', why:'Coesão e cuidado; políticas locais guiadas por resultados.'},
+
+  'B11-P': {name:'Curimon', emoji:'🕯️', why:'Disciplina e sentido; fé, dignidade e bem comum.'},
+  'B11-G': {name:'YukimiBotamon', emoji:'❄️', why:'Temperança e prudência; mesma direção, com avaliação empírica.'},
+
+  'B12-P': {name:'Mokumon', emoji:'🕊️', why:'Simbologia de incenso: tradição viva, ascese e contemplação.'},
+  'B12-G': {name:'Puttimon', emoji:'👼', why:'Misericórdia e prudência pastoral aplicadas à vida pública.'},
+
+  'B13-P': {name:'Keemon', emoji:'🛰️', why:'Vigilância e ordem internacional; responsabilidade de proteger.'},
+  'B13-G': {name:'Pupumon', emoji:'🧭', why:'Estabilidade por custo-benefício; pragmatismo estratégico em alianças.'},
+
+  'B14-P': {name:'PetiMeramon', emoji:'🚨', why:'Firmeza e energia combativa: lei, ordem e identidade.'},
+  'B14-G': {name:'Bommon', emoji:'🧱', why:'Assertivo e protetor; foco no que reduz crime e desemprego.'},
+
+  'B15-P': {name:'Bombmon', emoji:'💥', why:'Impulso mobilizador por soberania e justiça social.'},
+  'B15-G': {name:'Zurumon', emoji:'🧱', why:'Pragmatismo áspero na defesa do povo e do trabalho.'},
+
+  'B16-P': {name:'Yolkmon', emoji:'⚖️', why:'Equilíbrio constitucional; instituições como “ovo” da república.'},
+  'B16-G': {name:'Pusumon', emoji:'🧩', why:'Aprimora sistemas com paciência e medição de integridade pública.'},
+
+  'B17-P': {name:'Petitmon', emoji:'🚀', why:'Curioso e inventivo; aposta no progresso humano e direitos digitais.'},
+  'B17-G': {name:'Kuramon', emoji:'🧠', why:'Lida com riscos digitais com método e avaliação de impacto.'},
+
+  'B18-P': {name:'Fufumon', emoji:'🏭', why:'Forja tecnologia para o bem público com coordenação estatal.'},
+  'B18-G': {name:'Dokimon', emoji:'📜', why:'Audita, documenta e itera políticas tecnológicas.'},
+
+  'B19-P': {name:'Fusamon', emoji:'🔗', why:'Sinergias horizontais e autonomia radical com justiça.'},
+  'B19-G': {name:'Puyomon', emoji:'🧪', why:'Experimenta e aprende em redes voluntárias.'},
+
+  'B20-P': {name:'Punimon', emoji:'🏴', why:'Mínimo necessário, anti-centralização e liberdade contratual.'},
+  'B20-G': {name:'Cotsucomon', emoji:'📐', why:'Ordem espontânea e regras claras testadas na prática.'},
+
+  'B21-P': {name:'Pururumon', emoji:'🕸️', why:'Tecelão de redes de cooperação e apoio mútuo.'},
+  'B21-G': {name:'Sakumon', emoji:'🌼', why:'Floresce quando o bem-estar real aumenta.'},
+
+  'B22-P': {name:'Bubbmon', emoji:'🫧', why:'Prudente e centrado; media interesses e evita extremos.'},
+  'B22-G': {name:'Torikaraballmon', emoji:'🍗', why:'Humor e pragmatismo cotidiano: o que funciona fica.'},
+
+  'B23-P': {name:'Chibickmon', emoji:'🌍', why:'Cosmopolitismo gentil, direitos humanos e ciência pública.'},
+  'B23-G': {name:'Fukamon', emoji:'🌊', why:'Mergulha em dados e coordenação global por resultados.'},
+};
+
+/* ---------------------------- UI: Results ------------------------------ */
+const axesGrid = document.getElementById('axesGrid');
+const profileBlock = document.getElementById('profileBlock');
+const topCurrentsDiv = document.getElementById('topCurrents');
+const allCurrentsDiv = document.getElementById('allCurrents');
+const resultsCard = document.getElementById('results');
+
+function renderAxisCard(aKey, meta, value, isDir){
+  const container = document.createElement('div');
+  container.className='axis-card';
+  const header = document.createElement('div');
+  header.style.display='flex'; header.style.justifyContent='space-between'; header.style.alignItems='center';
+  const title = document.createElement('div'); title.className='axis-title'; title.textContent = meta.title;
+  const badge = document.createElement('div'); badge.innerHTML = `<span class="tag">${(Math.round(value*10)/10).toFixed(1)}</span>`;
+  header.append(title, badge);
+  const sub = document.createElement('div'); sub.className='axis-sub'; sub.textContent = meta.desc;
+
+  const bar = document.createElement('div'); bar.className='meter'; bar.style.marginTop='8px';
+  const center = document.createElement('div'); center.className='center'; if(!isDir){ center.style.display='none'; }
+  const fill = document.createElement('div'); fill.className='fill';
+  if(isDir){
+    const perc = (value + 100) / 2; // 0..100
+    fill.style.width = perc + '%';
+    fill.style.background = value>=0 ? 'linear-gradient(90deg,#06b6d4,#22c55e)' : 'linear-gradient(90deg,#ef4444,#f59e0b)';
+  }else{
+    const perc = value; fill.style.width = perc + '%';
+    fill.style.background = 'linear-gradient(90deg,#22c55e,#06b6d4)';
+  }
+  bar.appendChild(fill); bar.appendChild(center);
+  container.append(header, sub, bar);
+  return container;
+}
+
+function renderExpList(arr){
+  const ul = document.createElement('ul'); ul.className='tight';
+  (arr||[]).forEach(t=>{ const li=document.createElement('li'); li.innerHTML=t; ul.appendChild(li); });
+  return ul;
+}
+
+function renderResults(axesNorm, currents, classification){
+  profileBlock.innerHTML = '';
+  const title = document.createElement('div');
+  title.className='result-title';
+  title.textContent = classification.best.name;
+  const desc = document.createElement('div');
+  desc.className='desc';
+  desc.textContent = classification.best.desc;
+  const meta = document.createElement('div');
+  meta.style.marginTop='8px';
+  meta.innerHTML = `<span class="tag">Distância: ${Math.round(classification.bestD)}</span>`;
+
+  const expHeader = document.createElement('h3'); expHeader.textContent='Explicação do perfil';
+  const expList = renderExpList(classification.best.exp);
+
+  // Digimon
+  const digi = digimonMap[classification.best.code];
+  const digimonHeader = document.createElement('h3'); digimonHeader.textContent='Seu Digimon correspondente';
+  const digimonRow = document.createElement('div'); 
+  if(digi){
+    digimonRow.innerHTML = `
+      <div class="digimon-badge"><span>${digi.emoji || '✨'}</span><strong>${digi.name}</strong></div>
+      <div class="small" style="margin-top:6px">${digi.why}</div>
+    `;
+  }else{
+    digimonRow.innerHTML = `<div class="small">Sem mapeamento de Digimon para este perfil.</div>`;
+  }
+
+  profileBlock.append(title, desc, meta, digimonHeader, digimonRow, expHeader, expList);
+
+  // Axes grid
+  axesGrid.innerHTML='';
+  for(const a of ['Ecom','Cult','Autor','Glob','Epist','Etica','Orto','Virt','O','C','E','A','S']){
+    const isDir = axisMeta[a].type==='dir';
+    const el = renderAxisCard(a, axisMeta[a], axesNorm[a], isDir);
+    axesGrid.appendChild(el);
+  }
+
+  // Correntes: top 3
+  const entries = Object.entries(currents).map(([k,v])=>[k, v]);
+  entries.sort((a,b)=>b[1]-a[1]);
+  topCurrentsDiv.innerHTML='';
+  for(const [k,v] of entries.slice(0,3)){
+    const box = document.createElement('div');
+    box.className='card'; box.style.border='1px solid #1f2937';
+    const inner = document.createElement('div'); inner.className='body';
+    inner.innerHTML = `
+      <div style="font-weight:700">${currentsMeta[k]} <span class="tag">${(v).toFixed(1)}</span></div>
+      <div class="meter" style="margin-top:6px"><div class="fill" style="width:${v}%;background:linear-gradient(90deg,#0ea5e9,#7c3aed)"></div></div>
+      <div class="small" style="margin-top:6px">Código: ${k}</div>
+    `;
+    box.appendChild(inner);
+    topCurrentsDiv.appendChild(box);
+  }
+  allCurrentsDiv.innerHTML='';
+  for(const [k,v] of entries){
+    const row = renderAxisCard(k, {title:currentsMeta[k], desc:'Pontuação (0→100)'}, v, false);
+    allCurrentsDiv.appendChild(row);
+  }
+
+  resultsCard.style.display='';
+}
+
+/* ------------------------------ History -------------------------------- */
+const LS_KEY_HISTORY = 'quiz46_history';
+const LS_KEY_AUTOSAVE = 'quiz46_autoSave';
+const historyList = document.getElementById('historyList');
+const historyEmpty = document.getElementById('historyEmpty');
+
+function loadAutoSavePref(){
+  const chk = document.getElementById('chkAutoSave');
+  let v = localStorage.getItem(LS_KEY_AUTOSAVE);
+  // Ativado por padrão
+  if(v === null || (v !== '0' && v !== '1')){ v = '1'; localStorage.setItem(LS_KEY_AUTOSAVE, '1'); }
+  chk.checked = v === '1';
+  chk.addEventListener('change', ()=> localStorage.setItem(LS_KEY_AUTOSAVE, chk.checked?'1':'0'));
+}
+loadAutoSavePref();
+
+function getHistory(){
+  try{
+    const raw = localStorage.getItem(LS_KEY_HISTORY);
+    if(!raw) return [];
+    const arr = JSON.parse(raw);
+    if(Array.isArray(arr)) return arr;
+    return [];
+  }catch(e){ return []; }
+}
+function setHistory(arr){
+  try{ localStorage.setItem(LS_KEY_HISTORY, JSON.stringify(arr)); }catch(e){}
+}
+function saveToHistory(entry){
+  const arr = getHistory();
+  arr.unshift(entry);
+  setHistory(arr);
+  renderHistory();
+}
+function removeFromHistory(id){
+  const arr = getHistory().filter(x=>x.id!==id);
+  setHistory(arr);
+  renderHistory();
+}
+function restoreResponses(entry){
+  const resp = entry.responses || {};
+  for(const it of items){
+    const el = document.getElementById(it.code);
+    if(el && typeof resp[it.code] !== 'undefined'){
+      el.value = String(resp[it.code]);
+    }
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function renderHistory(){
+  const arr = getHistory();
+  historyList.innerHTML = '';
+  historyEmpty.style.display = arr.length ? 'none' : '';
+  for(const h of arr){
+    const card = document.createElement('div'); card.className='card';
+    const body = document.createElement('div'); body.className='body';
+    const dt = new Date(h.timestamp);
+    const top3 = topCurrents(h.currents, 3).map(t=>`${t.name} (${t.value.toFixed(0)})`).join(', ');
+    const digi = digimonMap[h.profile.code] || {};
+    body.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:700">${h.profile.name}</div>
+          <div class="small">${dt.toLocaleString()} • Distância: ${Math.round(h.profile.distance)}</div>
+          <div class="small">Top correntes: ${top3}</div>
+          <div class="small">Digimon: <span class="digimon-badge"><span>${digi.emoji||'✨'}</span><strong>${digi.name||'—'}</strong></span></div>
+        </div>
+        <div class="actions" style="margin:0">
+          <button class="ghost" data-act="restore" data-id="${h.id}">Restaurar respostas</button>
+          <button class="ghost" data-act="recalc" data-id="${h.id}">Recalcular</button>
+          <button class="secondary" data-act="del" data-id="${h.id}">Excluir</button>
+        </div>
+      </div>
+    `;
+    card.appendChild(body);
+    historyList.appendChild(card);
+  }
+  historyList.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-id');
+      const act = btn.getAttribute('data-act');
+      const entry = getHistory().find(x=>x.id===id);
+      if(!entry) return;
+      if(act==='restore'){ restoreResponses(entry); }
+      if(act==='recalc'){
+        restoreResponses(entry);
+        doCalc();
+        window.scrollTo({top:document.getElementById('results').offsetTop-10, behavior:'smooth'});
+      }
+      if(act==='del'){ removeFromHistory(id); }
+    });
+  });
+}
+function topCurrents(currObj, n=3){
+  const arr = Object.entries(currObj||{}).map(([k,v])=>({code:k, name:currentsMeta[k], value:v}));
+  arr.sort((a,b)=>b.value-a.value);
+  return arr.slice(0,n);
+}
+renderHistory();
+
+/* ------------------------------ Controls ------------------------------ */
+document.getElementById('btnCalc').addEventListener('click', ()=> doCalc());
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const bundle = buildCurrentBundle();
+  if(!bundle) return;
+  downloadJSON(bundle.one, 'resultado-46perfils.json');
+});
+document.getElementById('btnRandom').addEventListener('click', ()=>{
+  for(const it of items){ document.getElementById(it.code).value = String(1 + Math.floor(Math.random()*5)); }
+});
+document.getElementById('btnNeutral').addEventListener('click', ()=>{
+  for(const it of items){ document.getElementById(it.code).value = '3'; }
+});
+document.getElementById('btnSaveHistory').addEventListener('click', ()=>{
+  const bundle = buildCurrentBundle();
+  if(!bundle) return;
+  saveToHistory(bundle.one);
+});
+document.getElementById('btnExportHistory').addEventListener('click', ()=>{
+  const arr = getHistory();
+  downloadJSON(arr, 'historico-46perfils.json');
+});
+document.getElementById('btnClearHistory').addEventListener('click', ()=>{
+  if(confirm('Deseja limpar todo o histórico?')){ setHistory([]); renderHistory(); }
+});
+
+function doCalc(){
+  const bundle = buildCurrentBundle();
+  if(!bundle) return;
+  renderResults(bundle.axes, bundle.currents, bundle.cls);
+  if(document.getElementById('chkAutoSave').checked){
+    saveToHistory(bundle.one);
+  }
+  window.scrollTo({top:document.getElementById('results').offsetTop - 10, behavior:'smooth'});
+}
+function buildCurrentBundle(){
+  const responses = getResponses();
+  const {rawAxes, axesNorm, rawCurr, currNorm} = computeScores(responses);
+  const cls = classify(axesNorm);
+  const one = {
+    id: String(Date.now()) + '_' + Math.random().toString(36).slice(2,7),
+    responses, axesRaw:rawAxes, axes:axesNorm, currentsRaw:rawCurr, currents:currNorm,
+    profile:{code:cls.best.code, name:cls.best.name, subtype:cls.best.subtype, distance:cls.bestD, base:cls.best.base},
+    timestamp:new Date().toISOString()
+  };
+  return {one, axes:axesNorm, currents:currNorm, cls};
+}
+function downloadJSON(obj, filename){
+  const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+</script>
+</body>
+</html>
