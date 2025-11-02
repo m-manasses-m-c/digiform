@@ -46,6 +46,90 @@
   .axis-title{font-weight:700}
   .axis-sub{color:#9ca3af;font-size:12px;margin-top:2px}
   .digimon-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid #334155;background:#0b1220}
+
+  /* Tema claro opcional */
+html[data-theme="light"]{
+  --bg:#f8fafc; --panel:#ffffff; --text:#0f172a; --muted:#64748b; --accent:#0ea5e9;
+}
+html[data-theme="light"] header{
+  color:#0f172a;
+  background:linear-gradient(90deg,#93c5fd,#a78bfa);
+}
+html[data-theme="light"] .card h2{ background:#f1f5f9 }
+html[data-theme="light"] .meter{ background:#f8fafc; border-color:#e5e7eb }
+html[data-theme="light"] .axis-card{ border-color:#e5e7eb }
+html[data-theme="light"] .tag{ background:#f8fafc; border-color:#e5e7eb; color:#334155 }
+html[data-theme="light"] button.secondary{ background:#e2e8f0; color:#0f172a }
+html[data-theme="light"] button.ghost{ border-color:#cbd5e1; color:#334155 }
+html[data-theme="light"] .digimon-badge{ background:#f8fafc; border-color:#e5e7eb }
+
+/* Acessibilidade e foco */
+:focus-visible{ outline:3px solid var(--accent); outline-offset:2px; border-radius:8px }
+
+/* Header: barra de progresso */
+.header-progress{
+  margin-top:10px; height:8px; background:#0b1220; border:1px solid #1f2937;
+  border-radius:999px; overflow:hidden; position:relative
+}
+html[data-theme="light"] .header-progress{ background:#eef2ff; border-color:#e5e7eb }
+.header-progress .fill{ height:100%; width:0%; background:linear-gradient(90deg,#06b6d4,#22c55e); transition:width .25s ease }
+
+/* Cards das seções: colapsáveis e ações no título */
+#questions .card h2{
+  display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer
+}
+.section-tools{ display:flex; gap:8px; align-items:center }
+.section-tools .mini{ font-size:12px; opacity:.8 }
+.section-tools .chip{ background:#0b1220; border:1px solid #1f2937; border-radius:999px; padding:2px 8px; font-size:12px }
+.card.collapsed .body{ display:none }
+.chev{ transition:transform .2s ease; opacity:.7 }
+.card.collapsed .chev{ transform:rotate(-90deg) }
+
+/* Slider mais legível, com marcas e bolha */
+.likert .scale{ position:relative; width:100% }
+.q input[type=range]{
+  -webkit-appearance:none; width:100%; height:6px; background:transparent; cursor:pointer
+}
+.q input[type=range]::-webkit-slider-runnable-track{
+  height:6px; border-radius:999px; background:
+    linear-gradient(90deg,transparent 0, transparent 2%, #1f2937 2%, #1f2937 3%, transparent 3%),
+    linear-gradient(90deg,#0b1220,#0b1220);
+  border:1px solid #1f2937;
+}
+.q input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; height:18px; width:18px; border-radius:50%;
+  background:linear-gradient(180deg,#22c55e,#06b6d4); border:2px solid #0b1220; margin-top:-7px
+}
+.q input[type=range]::-moz-range-track{
+  height:6px; border-radius:999px; background:#0b1220; border:1px solid #1f2937
+}
+.q input[type=range]::-moz-range-thumb{
+  height:18px; width:18px; border-radius:50%;
+  background:linear-gradient(180deg,#22c55e,#06b6d4); border:2px solid #0b1220
+}
+.value-bubble{
+  position:absolute; top:-28px; transform:translateX(-50%);
+  background:#111827; color:#e5e7eb; border:1px solid #1f2937; padding:2px 6px; font-size:12px; border-radius:6px;
+  pointer-events:none; white-space:nowrap
+}
+html[data-theme="light"] .value-bubble{ background:#ffffff; color:#0f172a; border-color:#e5e7eb }
+
+/* Sticky bar de ações */
+#stickyBar{
+  position:fixed; left:0; right:0; bottom:0; z-index:50; backdrop-filter: blur(6px);
+  background:rgba(15,23,42,.75); border-top:1px solid #1f2937; padding:8px 12px
+}
+html[data-theme="light"] #stickyBar{ background:rgba(255,255,255,.85); border-top-color:#e5e7eb }
+#stickyBar .wrap{ max-width:1100px; margin:0 auto; display:flex; gap:8px; align-items:center; justify-content:space-between; flex-wrap:wrap }
+#stickyBar .left, #stickyBar .right{ display:flex; gap:8px; align-items:center }
+#stickyBar .hint{ font-size:12px; color:var(--muted) }
+
+/* Destaque ao pular para pergunta */
+.pulse{ animation:pulse 1s ease; }
+@keyframes pulse{
+  0%{ box-shadow:0 0 0 0 rgba(14,165,233,.6) }
+  100%{ box-shadow:0 0 0 8px rgba(14,165,233,0) }
+}
 </style>
 </head>
 <body>
@@ -1060,6 +1144,205 @@ function downloadJSON(obj, filename){
   a.download = filename;
   a.click();
 }
+
+  // 1) Tema claro/escuro (persistente)
+(function themeToggle(){
+  const KEY='quiz46_theme';
+  const btn = document.createElement('button');
+  btn.id='themeToggle';
+  btn.className='ghost';
+  btn.style.marginLeft='8px';
+  function setTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem(KEY,t); btn.textContent = t==='light'?'🌙 Tema':'☀️ Tema'; }
+  setTheme(localStorage.getItem(KEY)||'dark');
+
+  // Botão no header
+  const hdr = document.querySelector('header');
+  const row = document.createElement('div');
+  row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.gap='8px'; row.style.marginTop='8px';
+  const spacer = document.createElement('div'); spacer.textContent='';
+  const tools = document.createElement('div'); tools.style.display='flex'; tools.style.gap='8px'; tools.appendChild(btn);
+  row.append(spacer, tools);
+  hdr.appendChild(row);
+
+  btn.addEventListener('click', ()=> setTheme((localStorage.getItem(KEY)||'dark')==='dark'?'light':'dark'));
+})();
+
+// 2) Barra de progresso no header
+(function headerProgress(){
+  const bar = document.createElement('div');
+  bar.className='header-progress';
+  bar.innerHTML = '<div class="fill" id="overallProgressFill"></div>';
+  document.querySelector('header').appendChild(bar);
+})();
+
+// 3) Ferramentas por seção (colapsar, reset, progresso)
+(function sectionTools(){
+  const cards = Array.from(document.querySelectorAll('#questions .card'));
+  cards.forEach(card=>{
+    const h2 = card.querySelector('h2');
+    const body = card.querySelector('.body');
+    if(!h2 || !body) return;
+
+    // Decoração do título
+    const titleTxt = h2.textContent.trim();
+    h2.textContent='';
+    const left = document.createElement('div'); left.textContent = titleTxt;
+    const right = document.createElement('div'); right.className='section-tools';
+    right.innerHTML = `
+      <span class="chip"><span class="mini">Respondidas:</span> <strong class="gprog">0</strong>/12</span>
+      <span class="chev">▾</span>
+      <button class="ghost" title="Resetar este grupo">Resetar</button>
+    `;
+    h2.append(left, right);
+
+    // Estado colapsado
+    const KEY='quiz46_collapsed';
+    const state = JSON.parse(localStorage.getItem(KEY)||'{}');
+    if(state[titleTxt]) card.classList.add('collapsed');
+    h2.addEventListener('click', (e)=>{
+      if(e.target.tagName==='BUTTON') return; // botão reset não colapsa
+      card.classList.toggle('collapsed');
+      const st = JSON.parse(localStorage.getItem(KEY)||'{}');
+      st[titleTxt] = card.classList.contains('collapsed');
+      localStorage.setItem(KEY, JSON.stringify(st));
+    });
+
+    // Reset do grupo
+    right.querySelector('button').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      body.querySelectorAll('input[type=range]').forEach(r=>{ r.value='3'; r.dispatchEvent(new Event('input',{bubbles:true})) });
+      updateProgress();
+    });
+  });
+})();
+
+// 4) Sliders com bolha de valor e atalhos
+(function enhanceSliders(){
+  const sliders = Array.from(document.querySelectorAll('#questions input[type=range]'));
+
+  function labelOf(v){
+    const map = {1:'1',2:'2',3:'3',4:'4',5:'5'};
+    return map[v] || String(v);
+  }
+  function positionBubble(input){
+    let bubble = input.parentElement.querySelector('.value-bubble');
+    if(!bubble){
+      bubble = document.createElement('div'); bubble.className='value-bubble';
+      input.parentElement.appendChild(bubble);
+    }
+    const v = Number(input.value);
+    const perc = (v-1)/4*100;
+    bubble.textContent = labelOf(v);
+    bubble.style.left = perc+'%';
+  }
+
+  sliders.forEach((s, idx)=>{
+    // bolha dinâmica
+    s.addEventListener('input', ()=> positionBubble(s));
+    s.addEventListener('focus', ()=> positionBubble(s));
+
+    // atalhos 1..5 / setas / J K
+    s.addEventListener('keydown', (e)=>{
+      if(/^[1-5]$/.test(e.key)){ s.value = e.key; s.dispatchEvent(new Event('input',{bubbles:true})); e.preventDefault(); }
+      if(e.key==='ArrowRight' || e.key==='ArrowUp'){ s.value = Math.min(5, Number(s.value)+1); s.dispatchEvent(new Event('input',{bubbles:true})); e.preventDefault(); }
+      if(e.key==='ArrowLeft'  || e.key==='ArrowDown'){ s.value = Math.max(1, Number(s.value)-1); s.dispatchEvent(new Event('input',{bubbles:true})); e.preventDefault(); }
+      if(e.key.toLowerCase()==='j'){ focusNext(idx,+1); e.preventDefault(); }
+      if(e.key.toLowerCase()==='k'){ focusNext(idx,-1); e.preventDefault(); }
+      if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ doCalc(); }
+    });
+  });
+
+  function focusNext(i, dir){
+    const arr = Array.from(document.querySelectorAll('#questions input[type=range]'));
+    const j = Math.max(0, Math.min(arr.length-1, i+dir));
+    arr[j].focus({preventScroll:false}); arr[j].scrollIntoView({behavior:'smooth', block:'center'});
+  }
+})();
+
+// 5) Pré-visualização ao vivo (sem salvar no histórico)
+(function livePreview(){
+  const debounced = debounce(()=> {
+    const responses = getResponses();
+    const {axesNorm, currNorm} = computeScores(responses);
+    const cls = classify(axesNorm);
+    renderResults(axesNorm, currNorm, cls); // só renderiza, sem salvar
+  }, 180);
+
+  document.querySelectorAll('#questions input[type=range]').forEach(r=>{
+    r.addEventListener('input', ()=> { debounced(); updateProgress(); });
+  });
+
+  // atalhos globais
+  document.addEventListener('keydown', (e)=>{
+    if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ doCalc(); }
+    if(e.key.toLowerCase()==='n'){ scrollToNextNeutral(); }
+  });
+})();
+
+// 6) Sticky bar com ações rápidas (calcular, salvar, próxima neutra, topo, tema)
+(function stickyBar(){
+  const bar = document.createElement('div');
+  bar.id='stickyBar';
+  bar.innerHTML = `
+    <div class="wrap">
+      <div class="left">
+        <button id="sbCalc">Calcular</button>
+        <button id="sbSave" class="secondary">Salvar</button>
+        <button id="sbNext" class="ghost" title="Ir para a próxima pergunta neutra (N)">Próx. neutra</button>
+      </div>
+      <div class="right">
+        <span class="hint" id="sbProg">Progresso: 0%</span>
+        <button id="sbTop" class="ghost">Topo</button>
+        <button id="sbTheme" class="ghost" title="Alternar tema">Tema</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(bar);
+
+  document.getElementById('sbCalc').addEventListener('click', ()=> doCalc());
+  document.getElementById('sbSave').addEventListener('click', ()=>{
+    const bundle = buildCurrentBundle(); if(!bundle) return; saveToHistory(bundle.one);
+  });
+  document.getElementById('sbNext').addEventListener('click', scrollToNextNeutral);
+  document.getElementById('sbTop').addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+  document.getElementById('sbTheme').addEventListener('click', ()=>{
+    const cur = document.documentElement.getAttribute('data-theme')||'dark';
+    const next = cur==='dark'?'light':'dark';
+    document.getElementById('themeToggle')?.click(); // aproveita o botão já criado
+  });
+})();
+
+// 7) Progresso (geral e por grupo) + utilidades
+function updateProgress(){
+  const sliders = Array.from(document.querySelectorAll('#questions input[type=range]'));
+  const answered = sliders.filter(s=>s.value!=='3').length;
+  const total = sliders.length || 1;
+  const pct = Math.round(answered/total*100);
+  const fill = document.getElementById('overallProgressFill'); if(fill) fill.style.width = pct+'%';
+  const sb = document.getElementById('sbProg'); if(sb) sb.textContent = `Progresso: ${pct}%`;
+
+  // Por grupo (12 por seção)
+  const cards = Array.from(document.querySelectorAll('#questions .card'));
+  cards.forEach(card=>{
+    const n = card.querySelectorAll('input[type=range]').length || 1;
+    const a = Array.from(card.querySelectorAll('input[type=range]')).filter(s=>s.value!=='3').length;
+    const g = card.querySelector('.gprog'); if(g) g.textContent = a;
+  });
+}
+function scrollToNextNeutral(){
+  const neutral = Array.from(document.querySelectorAll('#questions input[type=range]')).find(s=>s.value==='3');
+  if(neutral){
+    neutral.scrollIntoView({behavior:'smooth', block:'center'});
+    neutral.classList.add('pulse'); setTimeout(()=>neutral.classList.remove('pulse'), 1000);
+    neutral.focus({preventScroll:true});
+  }
+}
+function debounce(fn, wait){
+  let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), wait); }
+}
+
+// Inicializar progresso ao carregar
+updateProgress();
 </script>
 </body>
 </html>
