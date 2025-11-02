@@ -224,19 +224,19 @@ html[data-theme="light"] #stickyBar{ background:rgba(255,255,255,.85); border-to
 const items = [
   // Ideologia (I1..I12)
   {code:'I1', group:'Ideologia', text:'Diante de duas reformas, prefiro a que diminui disparidades entre grupos mesmo que o avanço produtivo seja mais lento.', type:'dir',
-    axes:{Ecom:10, Cult:4}, currents:{}},
+    axes:{Ecom:12, Cult:8}, currents:{}},
   {code:'I2', group:'Ideologia', text:'Autoridades só devem limitar escolhas pessoais quando houver dano concreto a terceiros.', type:'dir',
-    axes:{Autor:12, Ecom:-4}, currents:{}},
+    axes:{Autor:12, Ecom:-6}, currents:{}},
   {code:'I3', group:'Ideologia', text:'Costumes herdados e liderança espiritual oferecem uma moldura moral mais confiável que experimentos sociais.', type:'dir',
-    axes:{Cult:-10, Orto:12, Etica:6}, currents:{DE:8, OR:10}},
+    axes:{Cult:-12, Orto:12, Etica:8}, currents:{DE:8, OR:10}},
   {code:'I4', group:'Ideologia', text:'Expressões culturais novas devem ser incorporadas rapidamente, sem esperar consenso prolongado.', type:'dir',
-    axes:{Cult:10}, currents:{}},
+    axes:{Cult:12}, currents:{}},
   {code:'I5', group:'Ideologia', text:'A distribuição de oportunidades deve refletir desempenho e esforço mais do que origem ou contexto.', type:'dir',
     axes:{Ecom:-10}, currents:{}},
   {code:'I6', group:'Ideologia', text:'Normas comuns precisam acomodar estilos de vida minoritários sem exigir justificativas extras.', type:'dir',
-    axes:{Cult:10}, currents:{}},
+    axes:{Cult:12}, currents:{}},
   {code:'I7', group:'Ideologia', text:'Prefiro soluções com liberdade de escolha e competição a arranjos únicos conduzidos centralmente.', type:'dir',
-    axes:{Ecom:-12, Autor:6}, currents:{}},
+    axes:{Ecom:-12, Autor:8}, currents:{}},
   {code:'I8', group:'Ideologia', text:'Quando um grupo precisa decidir, valorizo arranjos de cuidado mútuo mesmo que reduzam graus de autonomia individual.', type:'uni',
     axes:{Ecom:10, Virt:6}, currents:{VI:6}},
   {code:'I9', group:'Ideologia', text:'Algumas ações são simplesmente erradas, independentemente de seus resultados.', type:'dir',
@@ -246,13 +246,13 @@ const items = [
   {code:'I11', group:'Ideologia', text:'Regras fortes de propriedade e de contrato são a melhor defesa contra abusos, inclusive do poder público.', type:'dir',
     axes:{Ecom:-12, Autor:6}, currents:{}},
   {code:'I12', group:'Ideologia', text:'Vejo valor em resguardar hábitos locais e expressões nacionais contra pressões uniformizantes globais.', type:'dir',
-    axes:{Cult:-12, Glob:-8}, currents:{}},
+    axes:{Cult:-12, Glob:-10}, currents:{}},
 
   // Política (P1..P12)
   {code:'P1', group:'Política', text:'Quem mais se beneficia do sistema deve contribuir proporcionalmente mais para financiá-lo.', type:'dir',
     axes:{Ecom:12}, currents:{}},
   {code:'P2', group:'Política', text:'Em setores de alto risco, prefiro limites firmes definidos pelo regulador, mesmo que restrinjam escolhas.', type:'dir',
-    axes:{Autor:-10}, currents:{}},
+    axes:{Autor:-12}, currents:{}},
   {code:'P3', group:'Política', text:'Áreas críticas (energia, defesa, infraestrutura) devem ter direção pública predominante para evitar vulnerabilidades.', type:'dir',
     axes:{Ecom:12}, currents:{}},
   {code:'P4', group:'Política', text:'Direitos individuais básicos não devem ser sacrificados por preferências momentâneas da maioria.', type:'dir',
@@ -262,7 +262,7 @@ const items = [
   {code:'P6', group:'Política', text:'Mistura cultural e chegada de imigrantes tendem a fortalecer o país no longo prazo.', type:'dir',
     axes:{Glob:12, Cult:6}, currents:{}},
   {code:'P7', group:'Política', text:'Para manter a ordem, aceito ampliar monitoramento e presença policial.', type:'dir',
-    axes:{Autor:-10}, currents:{}},
+    axes:{Autor:-12}, currents:{}},
   {code:'P8', group:'Política', text:'É razoável trocar parte do crescimento presente por metas ambientais vinculantes.', type:'dir',
     axes:{Ecom:10, Cult:6}, currents:{}},
   {code:'P9', group:'Política', text:'Em casos extremos, é legítimo intervir além das fronteiras para proteger vidas e liberdades.', type:'dir',
@@ -766,122 +766,23 @@ const baseProfiles = [
 ];
 
 // Subtipos: Principista vs Pragmatista
-
-const profileSummaries = {
-  B1: {
-    P: 'Você combina liberalismo clássico e abertura ao mundo: vê o Estado como árbitro de direitos e contratos, defende mercados concorrenciais e acolhe mudanças culturais. Orientado por princípios, prioriza liberdade individual, igualdade perante a lei e racionalidade pública, desconfiando de paternalismos e protecionismos.',
-    G: 'Você valoriza liberdade econômica e direitos civis, mas decide por evidências e balanço de custos e benefícios. Abraça integração internacional e inovação, aceita regulação quando ela corrige falhas comprovadas e prefere reformas iterativas a soluções maximalistas.'
-  },
-  B2: {
-    P: 'Autonomia pessoal e subsidiariedade são centrais: você prefere arranjos voluntários, experimentação local e instituições de proximidade. Acredita no princípio de não agressão e em regras simples que protegem liberdades sem impor hierarquias pesadas.',
-    G: 'Você confia na engenhosidade das comunidades e na competição de ideias em pequena escala. Testa, compara e adota o que funciona em bairros e municípios, com regulação leve e mecanismos de reputação e cooperação.'
-  },
-  B3: {
-    P: 'Pró-inovação e pró-direitos, você combina mercado com redes de proteção e progressismo em costumes. Enxerga dignidade e oportunidades como objetivos públicos legítimos, sem sufocar o dinamismo econômico.',
-    G: 'Pragmático e aberto, você aposta em crescimento com inclusão via políticas avaliadas por impacto. Defende competição, correção de externalidades e ampliação de oportunidades com experimentação responsável.'
-  },
-  B4: {
-    P: 'Você sustenta bem-estar robusto, direitos civis e integração internacional. Igualdade de oportunidades e progressismo cultural caminham com instituições democráticas fortes e um Estado que promove coesão sem autoritarismo.',
-    G: 'Você busca equilíbrio entre qualidade do gasto, tributos e resultados sociais. Prefere metas claras e ajustes com base em dados, mirando sustentabilidade fiscal e redução de desigualdades.'
-  },
-  B5: {
-    P: 'Você enxerga desenvolvimento industrial e coesão nacional como prioridades estratégicas. Valoriza coordenação pública, cadeias produtivas fortes e algum conservadorismo cultural.',
-    G: 'Você privilegia instrumentos com metas e métricas: conteúdo local, crédito direcionado, P&D e exportações. Revê incentivos por desempenho, com pragmatismo e visão de longo prazo.'
-  },
-  B6: {
-    P: 'Democracia econômica e participação municipal orientam suas preferências. Você aposta em cooperativas, bens comuns e deliberação local para promover igualdade e solidariedade.',
-    G: 'Você trata bairros e cidades como laboratórios de bem-estar. Pilota políticas públicas, mede saúde e educação e escala o que funciona com transparência e participação.'
-  },
-  B7: {
-    P: 'Sustentabilidade e liberdade caminham juntas: você prefere mercados bem desenhados, direitos individuais e inovação verde. Valoriza responsabilidade intergeracional e prudência científica.',
-    G: 'Você foca em custo-efetividade ambiental, precificação de externalidades e regulação “smart”. Testa tecnologias limpas e revê regras conforme evidências.'
-  },
-  B8: {
-    P: 'Transição ecológica e justiça climática são norte. O Estado lidera mudanças profundas para reduzir impactos e distribuir custos de modo justo.',
-    G: 'Você mantém o rumo verde com pragmatismo. Prioriza mitigação/adaptação com melhor custo-benefício social e monitora impactos sobre emprego e renda.'
-  },
-  B9: {
-    P: 'Você combina apreço por instituições, costumes e virtudes cívicas com liberdades civis e economia de mercado. Favorece reformas prudentes e estabilidade social.',
-    G: 'Você preserva tradições e direitos sem rupturas. Adere a reformas calibradas por eficácia, competição e transparência regulatória.'
-  },
-  B10: {
-    P: 'Comunidade, família e deveres recíprocos são centrais. Prefere soluções locais, estabilidade de costumes e políticas que reforcem vínculos e responsabilidades.',
-    G: 'Você mede coesão e segurança com indicadores concretos. Investe em capital social, mentoria e programas focados no território.'
-  },
-  B11: {
-    P: 'Você reúne valores cristãos sacramentais com democracia e economia social de mercado. Defende dignidade da pessoa, subsidiariedade e proteção social à família.',
-    G: 'Você aplica princípios com prudência: prioriza parcerias público-comunitárias, transparência e resultados sociais sem descuidar da sustentabilidade.'
-  },
-  B12: {
-    P: 'Sua referência é a tradição viva, a vida litúrgica e a formação de caráter. Prefere prudência nas mudanças e políticas que protejam a liberdade religiosa e a paz social.',
-    G: 'Você aplica o ethos tradicional com sensatez: caridade eficaz, cooperação quando faz sentido e foco em frutos concretos para as pessoas.'
-  },
-  B13: {
-    P: 'Você crê em uma ordem internacional baseada em regras, alianças e responsabilidade de proteger. Concilia comércio, segurança e valores.',
-    G: 'Você favorece intervenções criteriosas, com avaliação de riscos, custos e viabilidade. Prefere coalizões eficazes e metas realistas.'
-  },
-  B14: {
-    P: 'Identidade nacional, lei e ordem e costumes tradicionais formam seu núcleo. Prefere fronteiras firmes, controle migratório e combate ao crime.',
-    G: 'Você prioriza resultados: reduzir violência e desemprego, fortalecer indústria e coesão, com revisões periódicas do que não entrega.'
-  },
-  B15: {
-    P: 'Soberania econômica, redistribuição e proteção do trabalho são centrais. O Estado atua para corrigir assimetrias e defender o povo.',
-    G: 'Você administra tarifas e compras públicas com prazos e metas. Combate fome e desemprego com instrumentos diretos e revisões por desempenho.'
-  },
-  B16: {
-    P: 'Liberdade como não dominação, virtudes cívicas e constituições firmes guiam suas escolhas. Você combate corrupção e arbitrariedade.',
-    G: 'Você mede integridade institucional e engajamento cívico. Aperfeiçoa regras com evidências e comparação entre jurisdições.'
-  },
-  B17: {
-    P: 'Você aposta no progresso humano por ciência e direitos digitais, com ética pública e inclusão. Vê tecnologia como alavanca de liberdade.',
-    G: 'Você usa pilotos e auditorias independentes para regular de modo adaptativo. Busca benefícios líquidos e mitigação de riscos.'
-  },
-  B18: {
-    P: 'Você vê o Estado como coordenador de revoluções tecnológicas em nome do interesse público. Previne riscos e promove infraestrutura e dados abertos.',
-    G: 'Você opera com sandboxes, metas e iteração. Ajusta regras por evidência e fairness, equilibrando inovação e segurança.'
-  },
-  B19: {
-    P: 'Autonomia radical, igualdade em costumes e anti-hierarquia orientam suas escolhas. Prefere comunidades voluntárias e plataformas abertas.',
-    G: 'Você avalia emancipação real: governança distribuída, pilotos comunitários e proteção de direitos civis na prática.'
-  },
-  B20: {
-    P: 'Você defende ordem espontânea baseada em propriedade, contratos e não agressão, com mínima centralização. Vê competição institucional como positiva.',
-    G: 'Você julga arranjos policêntricos por segurança, custos e inovação. Prefere reputação, seguros e arbitragem privada.'
-  },
-  B21: {
-    P: 'Autogestão e ajuda mútua são seu norte. Democracia direta, bens comuns e virtudes comunitárias organizam a vida coletiva.',
-    G: 'Você testa modelos comunais pelo bem-estar real. Escala o que floresce em rede com transparência e participação.'
-  },
-  B22: {
-    P: 'Você evita extremos e combina direitos, deveres e prudência. Prefere pactos, gradualismo e instituições estáveis.',
-    G: 'Você adota a máxima “o que funciona fica”. Usa benchmarking, pilotos e ajustes incrementais em vez de grandes rupturas.'
-  },
-  B23: {
-    P: 'Humanismo secular, ciência aberta e direitos universais guiam sua bússola. Valoriza laicidade, liberdade de consciência e cooperação internacional.',
-    G: 'Você maximiza florescimento humano mensurável. Compara políticas globalmente e revê decisões por evidências e impacto.'
-  }
-};
-
-  
 function buildCentroids(){
   const centroids = [];
   for(const b of baseProfiles){
+    // Principista (P)
     const p = JSON.parse(JSON.stringify(b.vec));
-    p.Epist = 60;  p.Etica = 60;  p.Virt  = 80;
+    p.Epist = 60;  // racionalismo
+    p.Etica = 60;  // deontologia
+    p.Virt  = 80;  // +30 sobre ~50
     if(p.Orto > 0) p.Orto = clamp(p.Orto + 10, -100, 100);
-    const descP = profileSummaries[b.code]?.P || b.descP || b.desc || '';
-    centroids.push({
-      code:`${b.code}-P`, base:b.code, name:`${b.name} (Principista)`,
-      vec:p, desc:descP, subtype:'P'
-    });
+    centroids.push({code:`${b.code}-P`, base:b.code, name:`${b.name} (Principista)`, vec:p, desc:b.descP, exp:b.expP, subtype:'P'});
 
+    // Pragmatista (G)
     const g = JSON.parse(JSON.stringify(b.vec));
-    g.Epist = -60; g.Etica = -60; g.Virt  = 60;
-    const descG = profileSummaries[b.code]?.G || b.descG || b.desc || '';
-    centroids.push({
-      code:`${b.code}-G`, base:b.code, name:`${b.name} (Pragmatista)`,
-      vec:g, desc:descG, subtype:'G'
-    });
+    g.Epist = -60; // empirismo
+    g.Etica = -60; // consequencialismo
+    g.Virt  = 60;  // +10 sobre ~50
+    centroids.push({code:`${b.code}-G`, base:b.code, name:`${b.name} (Pragmatista)`, vec:g, desc:b.descG, exp:b.expG, subtype:'G'});
   }
   return centroids;
 }
@@ -1028,77 +929,31 @@ function renderExpList(arr){
 
 function renderResults(axesNorm, currents, classification){
   profileBlock.innerHTML = '';
-
-  // Título e resumo
   const title = document.createElement('div');
   title.className='result-title';
   title.textContent = classification.best.name;
-
   const desc = document.createElement('div');
   desc.className='desc';
   desc.textContent = classification.best.desc;
-
   const meta = document.createElement('div');
   meta.style.marginTop='8px';
   meta.innerHTML = `<span class="tag">Distância: ${Math.round(classification.bestD)}</span>`;
 
+  const expHeader = document.createElement('h3'); expHeader.textContent='Explicação do perfil';
+  const expList = renderExpList(classification.best.exp);
+
   // Digimon
   const digi = digimonMap[classification.best.code];
-  const digimonHeader = document.createElement('h3'); 
-  digimonHeader.textContent='Seu Digimon correspondente';
+  const digimonHeader = document.createElement('h3'); digimonHeader.textContent='Seu Digimon correspondente';
   const digimonRow = document.createElement('div'); 
   if(digi){
     digimonRow.innerHTML = `
       <div class="digimon-badge"><span>${digi.emoji || '✨'}</span><strong>${digi.name}</strong></div>
-      <div class="small" style="margin-top:6px">${digi.why || ''}</div>
+      <div class="small" style="margin-top:6px">${digi.why}</div>
     `;
   }else{
     digimonRow.innerHTML = `<div class="small">Sem mapeamento de Digimon para este perfil.</div>`;
   }
-
-  // Explicações (expP/expG do perfil base)
-  const base = baseProfiles.find(b=>b.code===classification.best.base);
-  const expArr = base ? (classification.best.subtype==='P' ? (base.expP||[]) : (base.expG||[])) : [];
-  if(expArr.length){
-    const expHeader = document.createElement('h3');
-    expHeader.textContent = 'Como isso aparece nos seus eixos e preferências';
-    const expList = renderExpList(expArr);
-    profileBlock.append(title, desc, meta, digimonHeader, digimonRow, expHeader, expList);
-  }else{
-    profileBlock.append(title, desc, meta, digimonHeader, digimonRow);
-  }
-
-  // Eixos
-  axesGrid.innerHTML='';
-  for(const a of ['Ecom','Cult','Autor','Glob','Epist','Etica','Orto','Virt','O','C','E','A','S']){
-    const isDir = axisMeta[a].type==='dir';
-    const el = renderAxisCard(a, axisMeta[a], axesNorm[a], isDir);
-    axesGrid.appendChild(el);
-  }
-
-  // Correntes: top 3 e todas
-  const entries = Object.entries(currents).map(([k,v])=>[k, v]).sort((a,b)=>b[1]-a[1]);
-  topCurrentsDiv.innerHTML='';
-  for(const [k,v] of entries.slice(0,3)){
-    const box = document.createElement('div');
-    box.className='card'; box.style.border='1px solid #1f2937';
-    const inner = document.createElement('div'); inner.className='body';
-    inner.innerHTML = `
-      <div style="font-weight:700">${currentsMeta[k]} <span class="tag">${(v).toFixed(1)}</span></div>
-      <div class="meter" style="margin-top:6px"><div class="fill" style="width:${v}%;background:linear-gradient(90deg,#0ea5e9,#7c3aed)"></div></div>
-      <div class="small" style="margin-top:6px">Código: ${k}</div>
-    `;
-    box.appendChild(inner);
-    topCurrentsDiv.appendChild(box);
-  }
-  allCurrentsDiv.innerHTML='';
-  for(const [k,v] of entries){
-    const row = renderAxisCard(k, {title:currentsMeta[k], desc:'Pontuação (0→100)'}, v, false);
-    allCurrentsDiv.appendChild(row);
-  }
-
-  resultsCard.style.display='';
-}
 
   profileBlock.append(title, desc, meta, digimonHeader, digimonRow, expHeader, expList);
 
